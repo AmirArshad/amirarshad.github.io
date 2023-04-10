@@ -97,8 +97,105 @@
         </svg> </p>
     </div>
     <div id="vis"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.12/d3.min.js"></script>
-    <script>window.onload = function () { mobileCheck(); }; window.onresize = function (event) { mobileCheck(); }; function mobileCheck() { var isMobile = window.matchMedia("only screen and (max-width: 480px)"); destroyLinks(); if (!isMobile.matches) { createLinks(); } } function destroyLinks() { document.getElementById("vis").innerHTML = ""; } function createLinks() { var w, h; w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; h -= 10; /* body was gaining extra height from somewhere causing a scrollbar */ var force = d3.layout.force().linkDistance(2).linkStrength(2).gravity(.02).charge(-10).size([w, h]); var nodes = force.nodes(), links = force.links(); var svg = d3.select("#vis").append("svg:svg").attr("width", w).attr("height", h); force.on("tick", function () { svg.selectAll("circle").attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; }); svg.selectAll("line").attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; }); }); var p0; svg.on("mousemove", function () { var p1 = d3.mouse(this), node = { x: p1[0], y: p1[1], px: (p0 || (p0 = p1))[0], py: p0[1] }, link = { source: node, target: nodes[nodes.length - 1] || node }; p0 = p1; if (nodes.length > 1) { node.fixed = true; nodes[nodes.length - 1].fixed = false; } svg.insert("svg:line", "circle").data([link]).attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.target.x; }).attr("y2", function (d) { return d.target.y; }).style({ stroke: "#333", }).transition().delay(3000).remove(); svg.append("svg:circle").data([node]).attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; }).attr("r", 4.5).style({ fill: "none", stroke: "#333" }).transition().delay(3000).attr("r", 1e-6).each("end", function () { nodes.shift(); links.shift(); }).remove(); nodes.push(node); links.push(link); force.start(); }); }</script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        window.onload = function () { mobileCheck(); };
+        window.onresize = function (event) { mobileCheck(); };
+
+        function mobileCheck() {
+            var isMobile = window.matchMedia("only screen and (max-width: 480px)");
+            destroyLinks();
+            if (!isMobile.matches) {
+                createLinks();
+            }
+        }
+
+        function destroyLinks() {
+            d3.select("#vis").selectAll("*").remove(); // Use D3 to remove all elements inside the vis container
+        }
+
+        function createLinks() {
+            var w, h;
+            w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            h -= 10;
+
+
+            var nodes = [],
+                links = [];
+
+            var force = d3.forceSimulation()
+                .force("link", d3.forceLink().distance(2).strength(2))
+                .force("center", d3.forceCenter(w / 2, h / 2))
+                .force("charge", d3.forceManyBody().strength(-10))
+                .force("y", d3.forceY().strength(0.2))
+                .force("x", d3.forceX().strength(0.1));
+
+            var svg = d3.select("#vis")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            force.on("tick", function () {
+                svg.selectAll("circle")
+                    .attr("cx", function (d) { return d.x; })
+                    .attr("cy", function (d) { return d.y; });
+
+                svg.selectAll("line")
+                    .attr("x1", function (d) { return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; });
+            });
+
+            var p0;
+            svg.on("mousemove", function () {
+                var p1 = d3.pointer(event),
+                    node = { x: p1[0], y: p1[1], fx: p1[0], fy: p1[1] }, // Use fx and fy instead of px and py
+                    link = { source: node, target: nodes[nodes.length - 1] || node };
+
+                if (nodes.length > 1) {
+                    node.fx = p1[0]; // Set the x-coordinate fixed
+                    node.fy = p1[1]; // Set the y-coordinate fixed
+                    nodes[nodes.length - 1].fx = null; // Release the last node's x-coordinate
+                    nodes[nodes.length - 1].fy = null; // Release the last node's y-coordinate
+                }
+
+                svg.insert("line", "circle")
+                    .datum(link) // Use datum instead of data when binding single objects
+                    .attr("x1", function (d) { return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; })
+                    .style("stroke", "#333")
+                    .transition()
+                    .duration(500) // Use duration instead of delay
+                    .remove();
+
+                svg.append("circle")
+                    .datum(node) // Use datum instead of data when binding single objects
+                    .attr("cx", function (d) { return d.x; })
+                    .attr("cy", function (d) { return d.y; })
+                    .attr("r", 4.5)
+                    .style("fill", "none")
+                    .style("stroke", "#333")
+                    .transition()
+                    .duration(500) // Use duration instead of delay
+                    .attr("r", 1e-6)
+                    .on("end", function () {
+                        nodes.shift();
+                        links.shift();
+                    })
+                    .remove();
+
+                nodes.push(node);
+                links.push(link);
+
+                force.alpha(0.2).restart(); // Restart the force simulation with a higher alpha value
+            });
+        }
+    </script>
+
 </body>
 
 </html>
