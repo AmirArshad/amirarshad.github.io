@@ -514,14 +514,18 @@
                     .attr("y2", function (d) { return d.target.y; });
             });
 
-            svg.on("mousemove", function (event) {
-                const p1 = d3.pointer(event);
-                const node = { x: p1[0], y: p1[1], fx: p1[0], fy: p1[1] };
+            // Attach mousemove to the #vis div instead of SVG for consistent pointer event handling
+            const visDiv = document.getElementById('vis');
+            visDiv.addEventListener('mousemove', function (event) {
+                // Use pageX/pageY for consistent coordinates
+                const x = event.pageX;
+                const y = event.pageY;
+                const node = { x: x, y: y, fx: x, fy: y };
                 const link = { source: node, target: nodes[nodes.length - 1] || node };
 
                 if (nodes.length > 1) {
-                    node.fx = p1[0];
-                    node.fy = p1[1];
+                    node.fx = x;
+                    node.fy = y;
                     nodes[nodes.length - 1].fx = null;
                     nodes[nodes.length - 1].fy = null;
                 }
@@ -629,12 +633,6 @@
             const visDiv = document.getElementById('vis');
             let lastTouchTime = 0;
             const touchThrottle = 50; // ms between ripple creation during touchmove
-
-            // Add a brief flash to show the touch layer is active
-            visDiv.style.backgroundColor = 'rgba(255,0,0,0.1)';
-            setTimeout(() => {
-                visDiv.style.backgroundColor = 'transparent';
-            }, 500);
 
             // Handle touchstart
             visDiv.addEventListener('touchstart', function(event) {
