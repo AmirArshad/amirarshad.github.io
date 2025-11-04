@@ -86,12 +86,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 999;
             pointer-events: none;
         }
 
         #vis svg {
             pointer-events: all;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
 
         .container {
@@ -101,6 +104,11 @@
             max-width: 600px;
             padding: 3rem;
             animation: fadeIn 1s ease-out;
+            pointer-events: none;
+        }
+
+        .container * {
+            pointer-events: auto;
         }
 
         @keyframes fadeIn {
@@ -622,14 +630,19 @@
             let lastTouchTime = 0;
             const touchThrottle = 50; // ms between ripple creation during touchmove
 
+            console.log('Mobile animation initialized, SVG node:', svgNode);
+            console.log('SVG dimensions:', svgNode.getBoundingClientRect());
+
             // Handle touchstart
             svgNode.addEventListener('touchstart', function(event) {
+                console.log('touchstart event fired!', event.touches.length, 'touches');
                 const touches = event.touches;
                 if (touches && touches.length > 0) {
                     const touch = touches[0];
                     const rect = svgNode.getBoundingClientRect();
                     const x = touch.clientX - rect.left;
                     const y = touch.clientY - rect.top;
+                    console.log('Creating ripple at:', x, y);
                     createRipple(x, y);
                     lastTouchTime = Date.now();
                 }
