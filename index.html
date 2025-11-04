@@ -485,6 +485,10 @@
             const w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
             const h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
+            // Set background to match site gradient
+            const visDiv = document.getElementById('vis');
+            visDiv.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)';
+
             const nodes = [], links = [];
 
             const force = d3.forceSimulation()
@@ -572,6 +576,10 @@
         function createMobileAnimation() {
             const w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
             const h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+            // Set background to match site gradient
+            const visDiv = document.getElementById('vis');
+            visDiv.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)';
 
             const svg = d3.select("#vis")
                 .append("svg")
