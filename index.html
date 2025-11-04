@@ -617,23 +617,46 @@
                 }
             }
 
-            // Handle touch events
-            svg.on("touchstart touchmove", function (event) {
-                event.preventDefault();
+            // Handle touch events using native addEventListener for better mobile support
+            const svgNode = svg.node();
+            let lastTouchTime = 0;
+            const touchThrottle = 50; // ms between ripple creation during touchmove
+
+            // Handle touchstart
+            svgNode.addEventListener('touchstart', function(event) {
                 const touches = event.touches;
-                for (let i = 0; i < touches.length; i++) {
-                    const touch = touches[i];
-                    const rect = this.getBoundingClientRect();
+                if (touches && touches.length > 0) {
+                    const touch = touches[0];
+                    const rect = svgNode.getBoundingClientRect();
                     const x = touch.clientX - rect.left;
                     const y = touch.clientY - rect.top;
                     createRipple(x, y);
+                    lastTouchTime = Date.now();
                 }
-            });
+            }, { passive: true });
 
-            // Also handle clicks for testing on mobile
-            svg.on("click", function (event) {
-                const coords = d3.pointer(event);
-                createRipple(coords[0], coords[1]);
+            // Handle touchmove with throttling
+            svgNode.addEventListener('touchmove', function(event) {
+                const now = Date.now();
+                if (now - lastTouchTime < touchThrottle) return;
+
+                const touches = event.touches;
+                if (touches && touches.length > 0) {
+                    const touch = touches[0];
+                    const rect = svgNode.getBoundingClientRect();
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    createRipple(x, y);
+                    lastTouchTime = now;
+                }
+            }, { passive: true });
+
+            // Also handle clicks for desktop testing
+            svgNode.addEventListener('click', function(event) {
+                const rect = svgNode.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                createRipple(x, y);
             });
         }
     </script>
