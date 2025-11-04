@@ -85,16 +85,13 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100vh;
-            z-index: 999;
+            height: 100%;
+            z-index: 1;
             pointer-events: none;
-            touch-action: none;
         }
 
         #vis svg {
             pointer-events: all;
-            width: 100%;
-            height: 100%;
         }
 
         .container {
@@ -104,11 +101,6 @@
             max-width: 600px;
             padding: 3rem;
             animation: fadeIn 1s ease-out;
-            pointer-events: none;
-        }
-
-        .container * {
-            pointer-events: auto;
         }
 
         @keyframes fadeIn {
@@ -387,7 +379,7 @@
     <div class="container">
         <div class="glass-card">
             <h1>Amir Arshadnejad</h1>
-            <p class="subtitle">Director of Product at ESL FACEIT Group • Feel free to connect via the links below</p>
+            <p class="subtitle">Director of Product at ESL FACEIT Group<br>Feel free to connect via the links below</p>
 
             <div class="links-container">
                 <a href="https://www.linkedin.com/in/amir-arshadnejad/" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Visit Amir Arshadnejad's LinkedIn profile">
@@ -625,26 +617,23 @@
                 }
             }
 
-            // Handle touch events - use both D3 and native events for better compatibility
-            const svgNode = svg.node();
-
-            // Native touch event handler for better mobile Safari support
-            svgNode.addEventListener('touchstart', function(event) {
-                if (event.touches && event.touches.length > 0) {
-                    const touch = event.touches[0];
-                    const rect = svgNode.getBoundingClientRect();
+            // Handle touch events
+            svg.on("touchstart touchmove", function (event) {
+                event.preventDefault();
+                const touches = event.touches;
+                for (let i = 0; i < touches.length; i++) {
+                    const touch = touches[i];
+                    const rect = this.getBoundingClientRect();
                     const x = touch.clientX - rect.left;
                     const y = touch.clientY - rect.top;
                     createRipple(x, y);
                 }
-            }, { passive: true });
+            });
 
-            // Also handle clicks for testing on desktop
-            svgNode.addEventListener('click', function(event) {
-                const rect = svgNode.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-                createRipple(x, y);
+            // Also handle clicks for testing on mobile
+            svg.on("click", function (event) {
+                const coords = d3.pointer(event);
+                createRipple(coords[0], coords[1]);
             });
         }
     </script>
