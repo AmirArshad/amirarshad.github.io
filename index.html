@@ -87,14 +87,14 @@
             width: 100%;
             height: 100%;
             z-index: 999;
-            pointer-events: none;
+            pointer-events: auto;
+            touch-action: none;
         }
 
         #vis svg {
-            pointer-events: all;
+            pointer-events: none;
             width: 100%;
             height: 100%;
-            touch-action: none;
         }
 
         .container {
@@ -625,50 +625,49 @@
                 }
             }
 
-            // Handle touch events using native addEventListener for better mobile support
-            const svgNode = svg.node();
+            // Handle touch events - attach to #vis div instead of SVG for better mobile support
+            const visDiv = document.getElementById('vis');
             let lastTouchTime = 0;
             const touchThrottle = 50; // ms between ripple creation during touchmove
 
-            console.log('Mobile animation initialized, SVG node:', svgNode);
-            console.log('SVG dimensions:', svgNode.getBoundingClientRect());
+            // Add a brief flash to show the touch layer is active
+            visDiv.style.backgroundColor = 'rgba(255,0,0,0.1)';
+            setTimeout(() => {
+                visDiv.style.backgroundColor = 'transparent';
+            }, 500);
 
             // Handle touchstart
-            svgNode.addEventListener('touchstart', function(event) {
-                console.log('touchstart event fired!', event.touches.length, 'touches');
+            visDiv.addEventListener('touchstart', function(event) {
                 const touches = event.touches;
                 if (touches && touches.length > 0) {
                     const touch = touches[0];
-                    const rect = svgNode.getBoundingClientRect();
-                    const x = touch.clientX - rect.left;
-                    const y = touch.clientY - rect.top;
-                    console.log('Creating ripple at:', x, y);
+                    // Use page coordinates directly
+                    const x = touch.pageX;
+                    const y = touch.pageY;
                     createRipple(x, y);
                     lastTouchTime = Date.now();
                 }
             }, { passive: true });
 
             // Handle touchmove with throttling
-            svgNode.addEventListener('touchmove', function(event) {
+            visDiv.addEventListener('touchmove', function(event) {
                 const now = Date.now();
                 if (now - lastTouchTime < touchThrottle) return;
 
                 const touches = event.touches;
                 if (touches && touches.length > 0) {
                     const touch = touches[0];
-                    const rect = svgNode.getBoundingClientRect();
-                    const x = touch.clientX - rect.left;
-                    const y = touch.clientY - rect.top;
+                    const x = touch.pageX;
+                    const y = touch.pageY;
                     createRipple(x, y);
                     lastTouchTime = now;
                 }
             }, { passive: true });
 
             // Also handle clicks for desktop testing
-            svgNode.addEventListener('click', function(event) {
-                const rect = svgNode.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
+            visDiv.addEventListener('click', function(event) {
+                const x = event.pageX;
+                const y = event.pageY;
                 createRipple(x, y);
             });
         }
