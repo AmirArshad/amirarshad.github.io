@@ -197,6 +197,89 @@
             transform: translateX(0);
         }
 
+        /* About Me Section */
+        .about-section {
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+        }
+
+        .about-toggle {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg,
+                rgba(102, 126, 234, 0.1) 0%,
+                rgba(118, 75, 162, 0.1) 100%);
+            transition: width 0.4s ease;
+            z-index: -1;
+        }
+
+        .about-toggle:hover::before {
+            width: 100%;
+        }
+
+        .about-toggle:hover {
+            border-color: rgba(102, 126, 234, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .about-toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .about-toggle.active .about-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .about-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease, opacity 0.3s ease;
+            opacity: 0;
+            padding: 0 1rem;
+        }
+
+        .about-content.active {
+            max-height: 500px;
+            opacity: 1;
+            padding: 1.5rem 1rem 0.5rem 1rem;
+        }
+
+        .about-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .about-text:last-child {
+            margin-bottom: 0;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -247,7 +330,7 @@
     <div class="container">
         <div class="glass-card">
             <h1>Amir Arshadnejad</h1>
-            <p class="subtitle">Software Engineer • Feel free to connect via the links below</p>
+            <p class="subtitle">Director of Product at ESL FACEIT Group • Feel free to connect via the links below</p>
 
             <div class="links-container">
                 <a href="https://www.linkedin.com/in/amir-arshadnejad/" class="social-link" target="_blank" rel="noopener noreferrer">
@@ -276,13 +359,39 @@
                     <span class="link-arrow">→</span>
                 </a>
             </div>
+
+            <div class="about-section">
+                <button class="about-toggle" id="aboutToggle">
+                    <span>About Me</span>
+                    <span class="about-toggle-icon">↓</span>
+                </button>
+                <div class="about-content" id="aboutContent">
+                    <p class="about-text">London based Product leader with 10+ years building and scaling technical products from 0-to-1 across B2C platforms (gaming, sports streaming) and B2B SaaS (insurance, healthcare).</p>
+                    <p class="about-text">Currently Director of Product at ESL FACEIT Group leading Integrity for FACEIT and managing teams of PMs, engineers, and data scientists.</p>
+                    <p class="about-text">Arsenal fan, occasional tennis player and spa enjoyer.</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-        window.onload = function () { initializeAnimation(); };
+        window.onload = function () {
+            initializeAnimation();
+            initializeAboutToggle();
+        };
         window.onresize = function (event) { initializeAnimation(); };
+
+        // About Me toggle functionality
+        function initializeAboutToggle() {
+            const aboutToggle = document.getElementById('aboutToggle');
+            const aboutContent = document.getElementById('aboutContent');
+
+            aboutToggle.addEventListener('click', function() {
+                aboutToggle.classList.toggle('active');
+                aboutContent.classList.toggle('active');
+            });
+        }
 
         function initializeAnimation() {
             var isMobile = window.matchMedia("only screen and (max-width: 768px)").matches;
